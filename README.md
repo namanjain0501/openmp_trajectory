@@ -1,0 +1,1 @@
+# OPENMP Assignment 2 (Trajectory)
