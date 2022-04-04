@@ -79,6 +79,78 @@ void  updateVelocity(Velocity * v , Force * f , Velocity *ans ) {
     ans->y = v->y + ((f->y*TIME_STEP)/ (2*M)) ; 
     ans->z = v->z + ((f->z*TIME_STEP)/ (2*M)) ; 
 }
+
+
+
+int normalize(Position * p) {
+    double d = ((p->x)*(p->x)) + ((p->y)* (p->y)) + ((p->z)*(p->z)) ; 
+    double dd =sqrt(d) ; 
+    if(dd>0) {
+        p->x /= dd ; 
+        p->y /= dd ;
+        p->z /= dd ; 
+        return 1 ; 
+    }
+    else {
+        return 0 ; 
+    }
+}
+void collision(Position * p , Position * all_pos  , Velocity * nv ,Velocity * all_velo , int size)  {
+    int * collide = (int *)malloc(1 * sizeof(int)); 
+    int count = 0 ; 
+     for(int i = 0 ; i < size ; i++ ) {
+        double d2 = distance_sq(p,&all_pos[i]) ;
+        if(d2 > 1e-10 ) {
+            count++ ; 
+            realloc(*collide, count * sizeof(int));
+            collide[count-1] = i ; 
+        }
+    }
+    if(count > 0 ) {
+        Position mean ; 
+        mean.x = mean.y = mean.z = 0 ; 
+        Velocity mean_velocity ; 
+        mean_velocity.x =  mean_velocity.y =  mean_velocity.z =  0 ; 
+        for(int i = 0 ; i < count ; i++ ) {
+            mean.x+=all_pos[collide[i]].x ; 
+            mean.y+=all_pos[collide[i]].y ;
+            mean.z+=all_pos[collide[i]].z ;
+        }
+        mean.x /= (double)count ; 
+        mean.y /= (double)count ; 
+        mean.z /= (double)count ; 
+        Position collision_vector ; 
+        collision_vector.x = (mean.x - p->x) ; 
+        collision_vector.y = (mean.y - p->y) ; 
+        collision_vector.z = (mean.z - p->z) ;
+        int r = normalize(&collision_vector) ; 
+        if(r==1) {
+            double speed = pow((collision_vector.x) *( nv->x),2) +  pow((collision_vector.y) *( nv->y),2) + pow((collision_vector.z) *( nv->z),2) ; 
+            // Making the velocity 0 of the object in the line of collision
+            nv->x -= collision_vector.x*speed ; 
+            nv->y -= collision_vector.y*speed ; 
+            nv->z -= collision_vector.z*speed ; 
+        }
+        Velocity new_velocity ; 
+        new_velocity.x = new_velocity.y = new_velocity.z = 0 ; 
+        for(int i = 0 ; i < count ; i++ ) {
+            Position collision_vector_n ; 
+            collision_vector_n.x = (mean.x - all_pos[collide[i]].x) ; 
+            collision_vector_n.y = (mean.y - all_pos[collide[i]].y) ; 
+            collision_vector_n.z = (mean.z - all_pos[collide[i]].z) ;
+            int rr = normalize(&collision_vector_n) ; 
+            if(rr==1) {
+                double speed_n = pow((collision_vector_n.x) *( all_velo[i].x),2) 
+                                +  pow((collision_vector_n.y) *( all_velo[i].y),2) 
+                                + pow((collision_vector_n.z) *( all_velo[i].z),2) ; 
+                // 
+                new_velocity.x += collision_vector_n.x*speed_n ; 
+                nv->y -= collision_vector.y*speed ; 
+                nv->z -= collision_vector.z*speed ; 
+            }
+        }
+    }
+} 
 int main() {
     FILE * fp;
     FILE * fo;
@@ -86,6 +158,7 @@ int main() {
     char line[75] = {0};
     Position pos[TOTAL_BODIES] ; 
     Velocity velocity[TOTAL_BODIES] ; 
+    Velocity store_velocity[TOTAL_BODIES] ; 
     Force force[TOTAL_BODIES] ; 
     for(int i = 0 ;i < TOTAL_BODIES ; i++ ) {
         velocity[i].x = velocity[i].y = velocity[i].z =  0 ; 
@@ -127,6 +200,12 @@ int main() {
                 //printf("collision of %d with wall",i);
                 velocity[i].z=-velocity[i].z;
             }
+        }
+
+        
+        for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
+            store_velocity[i] = velocity[i] ; 
+            collision(&pos[i] , pos  , &store_velocity[i] , velocity , TOTAL_BODIES) ; 
         }
     }
     for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
