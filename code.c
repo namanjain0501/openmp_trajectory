@@ -100,7 +100,7 @@ void collision(Position * p , Position * all_pos  , Velocity * nv ,Velocity * al
     int count = 0 ; 
      for(int i = 0 ; i < size ; i++ ) {
         double d2 = distance_sq(p,&all_pos[i]) ;
-        if(d2 > 1e-10 ) {
+        if(d2 < 2*R && d2 > 1e-10) {
             count++ ; 
             realloc(*collide, count * sizeof(int));
             collide[count-1] = i ; 
