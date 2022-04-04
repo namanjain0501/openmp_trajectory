@@ -95,6 +95,18 @@ int normalize(Position * p) {
         return 0 ; 
     }
 }
+
+double velAfterCollision(double v1 , double v2 , int m ) {
+    // EQUATION : 
+    // (pow(v1,2) + m * pow(v2,2 ))/2.0  = pow(x,2)/2 + (0.5/m) * (pow(x,2) - 2*(v1 + m*v2)*x + pow((v1 + m*v2),2))
+    double a = 0.5 + (0.5 / (double) m );  
+    double b = -((v1 + m*v2) / (double) m) ; 
+    double c =  pow((v1 + m*v2),2) * (0.5/(double)m) - pow(v1,2) + (m * pow(v2,2))*0.5; 
+    double root1 = (-b + sqrt(b*b-4.*a*c) ) / (2.*a);
+    // double root2 = (-b - sqrt(b*b-4.*a*c) ) / (2.*a);
+    return root1 ; 
+    // return (root1 > 0) ? root1 : ((root2 > 0) ? (root2 : -1)) ; 
+}
 void collision(Position * p , Position * all_pos  , Velocity * nv ,Velocity * all_velo , int size)  {
     int * collide = (int *)malloc(1 * sizeof(int)); 
     int count = 0 ; 
@@ -102,7 +114,7 @@ void collision(Position * p , Position * all_pos  , Velocity * nv ,Velocity * al
         double d2 = distance_sq(p,&all_pos[i]) ;
         if(d2 < 2*R && d2 > 1e-10) {
             count++ ; 
-            realloc(*collide, count * sizeof(int));
+            realloc(collide, count * sizeof(int));
             collide[count-1] = i ; 
         }
     }
@@ -119,36 +131,27 @@ void collision(Position * p , Position * all_pos  , Velocity * nv ,Velocity * al
         mean.x /= (double)count ; 
         mean.y /= (double)count ; 
         mean.z /= (double)count ; 
+
         Position collision_vector ; 
         collision_vector.x = (mean.x - p->x) ; 
         collision_vector.y = (mean.y - p->y) ; 
         collision_vector.z = (mean.z - p->z) ;
-        int r = normalize(&collision_vector) ; 
-        if(r==1) {
-            double speed = pow((collision_vector.x) *( nv->x),2) +  pow((collision_vector.y) *( nv->y),2) + pow((collision_vector.z) *( nv->z),2) ; 
-            // Making the velocity 0 of the object in the line of collision
-            nv->x -= collision_vector.x*speed ; 
-            nv->y -= collision_vector.y*speed ; 
-            nv->z -= collision_vector.z*speed ; 
-        }
+        normalize(&collision_vector) ; 
+       
         Velocity new_velocity ; 
         new_velocity.x = new_velocity.y = new_velocity.z = 0 ; 
         for(int i = 0 ; i < count ; i++ ) {
-            Position collision_vector_n ; 
-            collision_vector_n.x = (mean.x - all_pos[collide[i]].x) ; 
-            collision_vector_n.y = (mean.y - all_pos[collide[i]].y) ; 
-            collision_vector_n.z = (mean.z - all_pos[collide[i]].z) ;
-            int rr = normalize(&collision_vector_n) ; 
-            if(rr==1) {
-                double speed_n = pow((collision_vector_n.x) *( all_velo[i].x),2) 
-                                +  pow((collision_vector_n.y) *( all_velo[i].y),2) 
-                                + pow((collision_vector_n.z) *( all_velo[i].z),2) ; 
-                // 
-                new_velocity.x += collision_vector_n.x*speed_n ; 
-                nv->y -= collision_vector.y*speed ; 
-                nv->z -= collision_vector.z*speed ; 
-            }
-        }
+            new_velocity.x += all_velo[collide[i]].x ; 
+            new_velocity.y += all_velo[collide[i]].y ; 
+            new_velocity.z += all_velo[collide[i]].z ; 
+        } 
+        new_velocity.x/=(double)count ; 
+        new_velocity.y/=(double)count ; 
+        new_velocity.z/=(double)count ; 
+        
+        nv->x =  velAfterCollision(collision_vector.x * nv->x , collision_vector.x*new_velocity.x , count) ;  
+        nv->y =  velAfterCollision(collision_vector.y * nv->y , collision_vector.y*new_velocity.y , count) ;  
+        nv->z =  velAfterCollision(collision_vector.z * nv->z , collision_vector.z*new_velocity.z , count) ;  
     }
 } 
 int main() {
@@ -206,6 +209,9 @@ int main() {
         for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
             store_velocity[i] = velocity[i] ; 
             collision(&pos[i] , pos  , &store_velocity[i] , velocity , TOTAL_BODIES) ; 
+        }
+        for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
+            velocity[i] = store_velocity[i] ; 
         }
     }
     for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
