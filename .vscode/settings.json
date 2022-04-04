@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "string.h": "c",
+        "stdlib.h": "c",
+        "corecrt_malloc.h": "c",
+        "stdio.h": "c"
+    }
+}
