@@ -12,8 +12,8 @@
 #define M  1 
 #define R  0.5 
 #define TIME_STEP  0.01 
-#define TOTAL_STEPS 10
-
+#define TOTAL_STEPS 100
+// FINALLY TO BE CHANGED TO 720000
 
 typedef struct position{
      double x ; 
