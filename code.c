@@ -99,11 +99,13 @@ int normalize(Position * p) {
 double velAfterCollision(double v1 , double v2 , int m ) {
     // EQUATION : 
     // (pow(v1,2) + m * pow(v2,2 ))/2.0  = pow(x,2)/2 + (0.5/m) * (pow(x,2) - 2*(v1 + m*v2)*x + pow((v1 + m*v2),2))
-    double a = 0.5 + (0.5 / (double) m );  
-    double b = -((v1 + m*v2) / (double) m) ; 
-    double c =  pow((v1 + m*v2),2) * (0.5/(double)m) - pow(v1,2) + (m * pow(v2,2))*0.5; 
-    double root1 = (-b + sqrt(b*b-4.*a*c) ) / (2.*a);
-    // double root2 = (-b - sqrt(b*b-4.*a*c) ) / (2.*a);
+    double a = 1 + (1.0 / (double) m );  
+    double b = -2*((v1 + m*v2) / (double) m) ; 
+    double c =  pow((v1 + m*v2),2) * (1.0/(double)m) - pow(v1,2) - (m * pow(v2,2)); 
+    double root1 = (-b + sqrt(b*b-(4.0*a*c)) ) / (2.0*a);
+    double root2 = (-b - sqrt(b*b-4.*a*c) ) / (2.*a);
+    printf("a = %lf b = %lf c = %lf \n" , a ,b, c ) ; 
+    printf("v1 = %lf v2 = %lf m = %lf Final V1 = %lf FINAL V2 = %lf\n" , v1, v2 , (double)m , root1 , root2 ) ; 
     if(root1 < 0) {
         printf("ERROR\n") ; 
         exit(0) ; 
