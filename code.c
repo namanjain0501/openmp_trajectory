@@ -41,8 +41,8 @@ bool collide_wall(double box_dimension,double ball_position) {
 }
 
 void parse_coords( Position * pos , FILE * fp) {
-    fscanf(fp,"%lf",&(pos->x)); 
-    fscanf(fp,"%lf",&(pos->y));
+    fscanf(fp,"%lf",&(pos->y)); 
+    fscanf(fp,"%lf",&(pos->x));
     fscanf(fp,"%lf",&(pos->z));
 }
 void printPosition(Position * p , int i , FILE * fo) {
@@ -104,6 +104,13 @@ double velAfterCollision(double v1 , double v2 , int m ) {
     double c =  pow((v1 + m*v2),2) * (0.5/(double)m) - pow(v1,2) + (m * pow(v2,2))*0.5; 
     double root1 = (-b + sqrt(b*b-4.*a*c) ) / (2.*a);
     // double root2 = (-b - sqrt(b*b-4.*a*c) ) / (2.*a);
+    if(root1 < 0) {
+        printf("ERROR\n") ; 
+        exit(0) ; 
+    }
+    else {
+        printf("Collision happening\n") ;
+    }
     return root1 ; 
     // return (root1 > 0) ? root1 : ((root2 > 0) ? (root2 : -1)) ; 
 }
