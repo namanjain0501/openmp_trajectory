@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <math.h> 
 #include <omp.h> 
 
-#define L  100 
-#define W  200  
-#define H  400  
+#define L  100.0 
+#define W  200.0  
+#define H  400.0  
 
 #define TOTAL_BODIES 1000  
 #define M  1.0 
@@ -33,6 +34,11 @@ typedef struct Force{
     long double z ; 
 }Force ; 
 
+bool collide_wall(double box_dimension,double ball_position) {
+    if(ball_position<=R || box_dimension-ball_position<=R)
+        return 1;
+    return 0;
+}
 
 void parse_coords( Position * pos , FILE * fp) {
     fscanf(fp,"%lf",&(pos->x)); 
@@ -107,8 +113,22 @@ int main() {
             calcForce(&pos[i] , pos , & force[i] , TOTAL_BODIES ) ;
             updateVelocity(&half_velocity , &force[i] , &velocity[i]) ; 
         }
+        //collision with wall
+        for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
+            if( collide_wall(L,pos[i].x)) {
+                //printf("collision of %d with wall",i);
+                velocity[i].x=-velocity[i].x;
+            }   
+            if( collide_wall(W,pos[i].y)) {
+                //printf("collision of %d with wall",i);
+                velocity[i].y=-velocity[i].y;
+            }
+            if( collide_wall(H,pos[i].z)) {
+                //printf("collision of %d with wall",i);
+                velocity[i].z=-velocity[i].z;
+            }
+        }
     }
-
     for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
         printPosition( &pos[i] , i+1 , fo) ;
     }
