@@ -9,7 +9,7 @@
 #define H  400  
 
 #define TOTAL_BODIES 1000  
-#define M  1 
+#define M  1.0 
 #define R  0.5 
 #define TIME_STEP  0.01 
 #define TOTAL_STEPS 100
