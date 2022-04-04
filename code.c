@@ -52,9 +52,9 @@ void calcForce(Position * p , Position * arr , Force * f , int size ) {
         if(d2 > 0 ) {
             double total_force = (M*M) / d2 ;
             double d = sqrt(d2) ;   
-            f->x += total_force * (abs(p->x - arr[i].x)/ d ) ; 
-            f->y += total_force * (abs(p->y - arr[i].y)/ d ) ;
-            f->z += total_force * (abs(p->z - arr[i].z)/ d ) ;
+            f->x += total_force * ((arr[i].x - p->x)/ d ) ; 
+            f->y += total_force * ((arr[i].y - p->y)/ d ) ;
+            f->z += total_force * ((arr[i].z - p->z )/ d ) ;
         }
     }
 }
