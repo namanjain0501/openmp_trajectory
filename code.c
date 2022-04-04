@@ -106,12 +106,15 @@ double velAfterCollision(double v1 , double v2 , int m ) {
     double root2 = (-b - sqrt(b*b-4.*a*c) ) / (2.*a);
     printf("a = %lf b = %lf c = %lf \n" , a ,b, c ) ; 
     printf("v1 = %lf v2 = %lf m = %lf Final V1 = %lf FINAL V2 = %lf\n" , v1, v2 , (double)m , root1 , root2 ) ; 
-    if(root1 < 0) {
-        printf("ERROR\n") ; 
-        exit(0) ; 
+    if(root1 - v1 > 1e-6) {
+        printf("Collision happening taken root1\n") ;
+        return root1 ; 
+       
     }
     else {
-        printf("Collision happening\n") ;
+        
+        printf("Collision happening taken root2 \n") ;
+        return root2 ; 
     }
     return root1 ; 
     // return (root1 > 0) ? root1 : ((root2 > 0) ? (root2 : -1)) ; 
