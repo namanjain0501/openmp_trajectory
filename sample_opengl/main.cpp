@@ -35,7 +35,7 @@ typedef struct{
 } Spheres;
 
 typedef struct{
-    int length, width, depth;
+    int height, width, depth;
 } Container;
 
 vector<Point> Coords;
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
     glutCreateWindow("HP3 OpenMP TermProject");
 
     glutDisplayFunc(display);
-    glutTimerFunc(0, timer, 0);
+    //glutTimerFunc(0, timer, 0);
     glutReshapeFunc(reshape);
 
     init();
@@ -87,7 +87,7 @@ Container readContainer(ifstream &fin){
             text = "Container length (in m) = ";
             size = text.size();
             line.erase(line.begin()+0, line.begin()+size);
-            box.length = stoi(line);
+            box.height = stoi(line);
         } else if (line.find("Container width (in m) = ") != string::npos) {
             text = "Container width (in m) = ";
             size = text.size();
@@ -164,11 +164,13 @@ void printArray(vector<Point> &A, int n) {
 // Contains the content that need to be drawn on the frame
 void display(void)
 {
+
+    extractCurrentCoords(Coords, balls.n, fin);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
      glPushMatrix();
     glLoadIdentity();
 
-    //drawCube(box);
+    drawCube(box);
 
     cout<<"#:"<<Coords[0].x<<"\n";
 
@@ -218,13 +220,98 @@ void reshape(GLint w, GLint h)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     //glhPerspectivef2(45, GLfloat(w)/GLfloat(h), 0, 500);
-    glOrtho(0,500,0,500,0,500);
+    //glOrtho(0,500,0,500,0,500);
     glMatrixMode(GL_MODELVIEW);
 }
 
 void drawCube(Container box)
 {
-    // This cube should have depth effect
+    // This cube should have depth effect. Draw Lines
+    glBegin(GL_LINES);
+
+    glColor3f(1, 0, 0);
+    glLineWidth(3);
+
+
+    // Front face
+    glVertex3f(0, 0, box.depth);
+    glVertex3f(box.width, 0, box.depth);
+
+    glVertex3f(box.width, 0, box.depth);
+    glVertex3f(box.width, box.height, box.depth);
+
+    glVertex3f(box.width, box.height, box.depth);
+    glVertex3f(0, box.height, box.depth);
+
+    glVertex3f(0, box.height, box.depth);
+    glVertex3f(0, 0, box.depth);
+
+    // Back face
+    glVertex3f(0, 0, 0);
+    glVertex3f(box.width, 0, 0);
+
+    glVertex3f(box.width, 0, 0);
+    glVertex3f(box.width, box.height, 0);
+
+    glVertex3f(box.width, box.height, 0);
+    glVertex3f(0, box.height, 0);
+
+    glVertex3f(0, box.height, 0);
+    glVertex3f(0, 0, 0);
+
+    // Left face
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 0, box.depth);
+
+    glVertex3f(0, 0, box.depth);
+    glVertex3f(0, box.height, box.depth);
+
+    glVertex3f(0, box.height, box.depth);
+    glVertex3f(0, box.height, 0);
+
+    glVertex3f(0, box.height, 0);
+    glVertex3f(0, 0, 0);
+
+    // Right face
+    glVertex3f(box.width, 0, 0);
+    glVertex3f(box.width, 0, box.depth);
+
+    glVertex3f(box.width, 0, box.depth);
+    glVertex3f(box.width, box.height, box.depth);
+
+    glVertex3f(box.width, box.height, box.depth);
+    glVertex3f(box.width, box.height, 0);
+
+    glVertex3f(box.width, box.height, 0);
+    glVertex3f(box.width, 0, 0);
+
+    // Top face
+    glVertex3f(box.width, box.height, box.depth);
+    glVertex3f(box.width, box.height, 0);
+
+    glVertex3f(box.width, box.height, 0);
+    glVertex3f(0, box.height, 0);
+
+    glVertex3f(0, box.height, 0);
+    glVertex3f(0, box.height, box.depth);
+
+    glVertex3f(0, box.height, box.depth);
+    glVertex3f(box.width, box.height, box.depth);
+
+    // Bottom face
+    glVertex3f(box.width, 0, box.depth);
+    glVertex3f(box.width, 0, 0);
+
+    glVertex3f(box.width, 0, 0);
+    glVertex3f(0, 0, 0);
+
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 0, box.depth);
+
+    glVertex3f(0, 0, box.depth);
+    glVertex3f(box.width, 0, box.depth);
+
+    glEnd();
 }
 
 
