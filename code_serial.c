@@ -16,8 +16,6 @@
 #define TOTAL_STEPS 500
 // FINALLY TO BE CHANGED TO 720000
 
-#define THREADS 8
-
 typedef struct position{
      double x ; 
      double y ; 
@@ -171,113 +169,82 @@ void collision(Position * p , Position * all_pos  , Velocity * nv ,Velocity * al
 int main() {
     FILE * fp;
     FILE * fo;
-    fp = fopen("Trajectory.txt", "r");
-    fo = fopen("output.txt", "w");
-    if (fp == NULL)
-        exit(EXIT_FAILURE);
-
     size_t len = 0;
     char line[75] = {0};
     Position pos[TOTAL_BODIES] ; 
     Velocity velocity[TOTAL_BODIES] ; 
     Velocity store_velocity[TOTAL_BODIES] ; 
     Force force[TOTAL_BODIES] ; 
-    int i,j;
-    Velocity half_velocity ;
-
-    #pragma omp parallel num_threads(THREADS)
-    {
-        #pragma omp for private(i)
-        for(i = 0 ;i < TOTAL_BODIES ; i++ ) {
-            velocity[i].x = velocity[i].y = velocity[i].z =  0 ; 
-        }
-
-        #pragma omp master
-        {
-            // READING THE TOP NOT REQUIRED PART OF FILE 
-            for(int i = 0 ; i < 8 ; i++ ) {
-                fgets(line, 75 , fp) ; 
-            }
-            // reading initial coordinates serially
-            for(i = 0 ; i < TOTAL_BODIES ; i++ ) {
-                parse_coords( &pos[i] , fp) ;  
-            }
-        }
-
-        #pragma omp barrier
-
-        #pragma omp for
-        for(i = 0 ; i < TOTAL_BODIES ; i++ ) {
-            // calculating gravitional force (f at time step 0) on body i from all bodies
-            calcForce(&pos[i] , pos , & force[i] , TOTAL_BODIES ) ;
-        }
+    for(int i = 0 ;i < TOTAL_BODIES ; i++ ) {
+        velocity[i].x = velocity[i].y = velocity[i].z =  0 ; 
     }
+    fp = fopen("Trajectory.txt", "r");
+    fo = fopen("output_serial.txt", "w");
+    if (fp == NULL)
+        exit(EXIT_FAILURE);
 
-    for(int st = 0 ; st < TOTAL_STEPS ; st++ )
-    {
-        #pragma omp parallel num_threads(THREADS)
+    // READING THE TOP NOT REQUIRED PART OF FILE 
+    for(int i = 0 ; i < 8 ; i++ ) {
+        fgets(line, 75 , fp) ; 
+    }
+    for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
+        parse_coords( &pos[i] , fp) ;  
+    }
+    Velocity half_velocity ; 
+    for(int  i = 0 ; i < TOTAL_BODIES ; i++ ) {
+        // calculating gravitional force (f at time step 0) on body i from all bodies
+        calcForce(&pos[i] , pos , & force[i] , TOTAL_BODIES ) ;
+    }
+    for(int st = 0 ; st < TOTAL_STEPS ; st++ ) {
+        for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
+            // v((st+1)/2)
+            calcHalfVelocity(&velocity[i] , &force[i] , &velocity[i]) ; 
+            // r(st+1)
+            updatePos(&pos[i] , &velocity[i]) ; 
+        }
+        for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
+            // f(st+1)
+            calcForce(&pos[i] , pos , & force[i] , TOTAL_BODIES ) ;
+            // v(st+1)
+            updateVelocity(&velocity[i] , &force[i] , &velocity[i]) ; 
+        }
+
+        //collision with wall
+        for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
+            if( collide_wall(L,pos[i].x)) {
+                //printf("collision of %d with wall",i);
+                velocity[i].x=-velocity[i].x;
+            }   
+            if( collide_wall(W,pos[i].y)) {
+                //printf("collision of %d with wall",i);
+                velocity[i].y=-velocity[i].y;
+            }
+            if( collide_wall(H,pos[i].z)) {
+                //printf("collision of %d with wall",i);
+                velocity[i].z=-velocity[i].z;
+            }
+        }
+
+        
+        for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
+            store_velocity[i] = velocity[i] ; 
+            collision(&pos[i] , pos  , &store_velocity[i] , velocity , TOTAL_BODIES) ; 
+        }
+        for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
+            velocity[i] = store_velocity[i] ; 
+        }
+        if(st%100 == 0)
         {
-            #pragma omp for private(i)
-            for(i = 0 ; i < TOTAL_BODIES ; i++ )
-            {
-                // v((st+1)/2)
-                calcHalfVelocity(&velocity[i] , &force[i] , &velocity[i]) ; 
-                // r(st+1)
-                updatePos(&pos[i] , &velocity[i]) ; 
+            for(int i = 0 ; i < TOTAL_BODIES ; i++ ) {
+                fprintf(fo , "%f %f %f " , pos[i].x , pos[i].y , pos[i].z ) ; 
             }
-
-            #pragma omp for private(i)
-            for(i = 0 ; i < TOTAL_BODIES ; i++ )
-            {
-                // f(st+1)
-                calcForce(&pos[i] , pos , &force[i] , TOTAL_BODIES ) ;
-                // v(st+1)
-                updateVelocity(&velocity[i] , &force[i] , &velocity[i]) ; 
-            }
-
-            //collision with wall
-            #pragma omp for private(i)
-            for(i = 0 ; i < TOTAL_BODIES ; i++ ) {
-                if( collide_wall(L,pos[i].x)) {
-                    //printf("collision of %d with wall",i);
-                    velocity[i].x=-velocity[i].x;
-                }   
-                if( collide_wall(W,pos[i].y)) {
-                    //printf("collision of %d with wall",i);
-                    velocity[i].y=-velocity[i].y;
-                }
-                if( collide_wall(H,pos[i].z)) {
-                    //printf("collision of %d with wall",i);
-                    velocity[i].z=-velocity[i].z;
-                }
-            }
-
-            #pragma omp for private(i) 
-            for(i = 0 ; i < TOTAL_BODIES ; i++ ) {
-                store_velocity[i] = velocity[i] ; 
-                collision(&pos[i] , pos  , &store_velocity[i] , velocity , TOTAL_BODIES) ; 
-            }
-
-            #pragma omp for private(i)
-            for(i = 0 ; i < TOTAL_BODIES ; i++ ) {
-                velocity[i] = store_velocity[i] ; 
-            }
-
-            #pragma omp master
-            {
-                if(st%100 == 0)
-                {
-                    for(i = 0 ; i < TOTAL_BODIES ; i++ ) {
-                        fprintf(fo , "%f %f %f " , pos[i].x , pos[i].y , pos[i].z ) ; 
-                    }
-                    fprintf(fo, "\n");
-                }
-            }
+            fprintf(fo, "\n");
         }
     }
 
 
     fclose(fp);
     fclose(fo);
+    
     exit(EXIT_SUCCESS);
 }

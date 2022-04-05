@@ -172,7 +172,7 @@ int main() {
     FILE * fp;
     FILE * fo;
     fp = fopen("Trajectory.txt", "r");
-    fo = fopen("output.txt", "w");
+    fo = fopen("output.bin", "wb");
     if (fp == NULL)
         exit(EXIT_FAILURE);
 
@@ -268,9 +268,11 @@ int main() {
                 if(st%100 == 0)
                 {
                     for(i = 0 ; i < TOTAL_BODIES ; i++ ) {
-                        fprintf(fo , "%f %f %f " , pos[i].x , pos[i].y , pos[i].z ) ; 
+                        fwrite(&pos[i].x, sizeof(double), 1, fo);
+                        fwrite(&pos[i].y, sizeof(double), 1, fo);
+                        fwrite(&pos[i].z, sizeof(double), 1, fo);
                     }
-                    fprintf(fo, "\n");
+                    fwrite("\n", sizeof(char), 1, fo);
                 }
             }
         }
