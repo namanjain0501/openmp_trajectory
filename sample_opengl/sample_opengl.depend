@@ -1,0 +1,13 @@
+# depslib dependency file v1.0
+1649186838 source:c:\users\gasad\desktop\vahini\sample_opengl\main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<fstream>
+	<vector>
+	<iostream>
+	<stdbool.h>
+	<GLUT/glut.h>
+	<GL/glut.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
