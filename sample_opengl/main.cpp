@@ -22,7 +22,7 @@
 using namespace std;
 
 #define TRJ "output.bin"
-#define TIMESTEPS 50
+#define TIMESTEPS 100
 #define DELTA 0.01
 
 //Input and output functions
@@ -223,10 +223,11 @@ void init(void)
     //glClearDepth(box.depth);  // Leave for now
     glColor3f(1.0, 1.0, 1.0); // default color for primitives
 
-   glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
+   /*glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
    glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
    glShadeModel(GL_SMOOTH);   // Enable smooth shading
    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
+   */
 
 }
 
@@ -269,7 +270,7 @@ void reshape(GLint w, GLint h)
     glOrtho(0, w, 0, h, 0, -1000);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslatef(w/2-2*box.width, h/2-2*box.height, 2*box.depth);
+    glTranslatef(w/2-2*box.width, h/2-2*box.height, -500+2*box.depth);
     glScalef(4.0, 4.0, 4.0);
 }
 
