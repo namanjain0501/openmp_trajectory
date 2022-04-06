@@ -5,6 +5,7 @@
 #include<vector>
 #include<iostream>
 #include<stdbool.h>
+#include<cmath>
 
 // OpenGL graphics libraries.
 #ifdef __APPLE_CC__
@@ -57,6 +58,7 @@ void drawSpheres(void);
 void init(void);
 void timer(int);
 void reshape(GLint, GLint);
+void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar );
 
 int main(int argc, char** argv)
 {
@@ -166,8 +168,8 @@ void display(void)
 {
 
     extractCurrentCoords(Coords, balls.n, fin);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
-     glPushMatrix();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT  );
+    glPushMatrix();
     glLoadIdentity();
 
     drawCube(box);
@@ -183,8 +185,13 @@ void display(void)
 // Enables depth testing and sets background colors
 void init(void)
 {
+
+    // Set the current clear color to sky blue and the current drawing color to
+    // white.
+    glClearColor(0.1, 0.39, 0.88, 1.0);
+    glColor3f(1.0, 1.0, 1.0);
+
     glEnable(GL_DEPTH_TEST);
-    //glClearColor(1.0, 1.0, 0.0, 0.0);
     fin.open(TRJ);
     box = readContainer(fin);
     balls = readSpheres(fin);
@@ -213,15 +220,27 @@ void timer(int v)
 
 }
 
+void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar )
+{
+    const GLdouble pi = 3.1415926535897932384626433832795;
+    GLdouble fW, fH;
+
+    //fH = tan( (fovY / 2) / 180 * pi ) * zNear;
+    fH = tan( fovY / 360 * pi ) * zNear;
+    fW = fH * aspect;
+
+    glFrustum( -fW, fW, -fH, fH, zNear, zFar );
+}
+
 // This function is called whenever window is resized, fixes the projection
 void reshape(GLint w, GLint h)
 {
     glViewport(0, 0, w, h); // set the viewing area
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    //glhPerspectivef2(45, GLfloat(w)/GLfloat(h), 0, 500);
-    //glOrtho(0,500,0,500,0,500);
+    perspectiveGL(45,GLfloat(w)/GLfloat(h) , -500,0);
     glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 void drawCube(Container box)
