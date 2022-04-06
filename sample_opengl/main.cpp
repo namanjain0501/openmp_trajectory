@@ -21,8 +21,8 @@
 
 using namespace std;
 
-#define TRJ "Trajectory.txt"
-#define TIMESTEPS 9
+#define TRJ "output.bin"
+#define TIMESTEPS 7200
 #define DELTA 0.01
 
 //Input and output functions
@@ -46,12 +46,12 @@ vector<Point> Coords;
 Container box;
 Spheres balls;
 bool readBox = true;
-ifstream fin;
+FILE *f1;
 int steps = 0;
 
-Container readContainer(ifstream &fin);
-Spheres readSpheres(ifstream &fin);
-void extractCurrentCoords(vector<Point> &A, int n, ifstream &fin) ;
+Container readContainer();
+Spheres readSpheres();
+void extractCurrentCoords(vector<Point> &A, int n) ;
 void printArray(vector<Point> &A, int n) ;
 
 // Graphics Functions
@@ -66,7 +66,7 @@ void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFa
 int main(int argc, char** argv)
 {
     // initialize and create a window
-    glutInit(&argc, argv);
+    /*glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(1024, 1024);
     glutCreateWindow("HP3 OpenMP TermProject");
@@ -78,11 +78,10 @@ int main(int argc, char** argv)
     init();
 
     glutMainLoop();
-    fin.close();
+    fin.close();*/
 
-    /*fin.open(TRJ);
-    box = readContainer(fin);
-    balls = readSpheres(fin);
+    fl = fopen(TRJ, "rb");
+
     // Assign space to store coordinates of the sphere
     Point temp;
     temp.id = temp.x = temp.y = temp.z = 0;
@@ -95,17 +94,17 @@ int main(int argc, char** argv)
     printArray(Coords, 10);
 
     extractCurrentCoords(Coords, balls.n, fin);
-    printArray(Coords, 10);*/
+    printArray(Coords, 10);
 
     return 0;
 }
 
-Container readContainer(ifstream &fin){
+Container readContainer(){
     string line, text;
     int count, size;
     count = 0;
     Container box;
-    while(getline(fin, line)) {
+    /*while(getline(fin, line)) {
         if (line.find("Container length (in m) = ") != string::npos) {
             text = "Container length (in m) = ";
             size = text.size();
@@ -124,17 +123,20 @@ Container readContainer(ifstream &fin){
             break;
         }
         count ++;
-    }
+    }*/
+    box.depth = 400;
+    box.width  =100;
+    box.height = 200;
 
     return box;
 }
 
-Spheres readSpheres(ifstream &fin) {
+Spheres readSpheres() {
     string line, text;
     int count, size;
     count = 0;
     Spheres ball;
-    while(getline(fin, line)) {
+    /*while(getline(fin, line)) {
         if (line.find("Total number of bodies = ") != string::npos) {
             text = "Total number of bodies = ";
             size = text.size();
@@ -158,20 +160,28 @@ Spheres readSpheres(ifstream &fin) {
             break;
         }
         count ++;
-    }
+    }*/
+    ball.mass = 1;
+    ball.n = 1000;
+    ball.radius = 0.5;
+    ball.time = 0.01;
 
     return ball;
 }
 
-void extractCurrentCoords(vector<Point> &A, int n, ifstream &fin) {
+void extractCurrentCoords(vector<Point> &A, int n) {
     string line;
     int i;
     Point temp;
     //getline(fin, line);
     for(i=0; i<n; i++) {
-       fin>>temp.x>>temp.y>>temp.z;
-       temp.id = i;
-       A[i] = temp;
+            fread(&temp.x, sizeof(double), 1, fl);
+            fread(&temp.y, sizeof(double), 1, fl);
+            fread(&temp.z, sizeof(double), 1, fl);
+            fprintf(A[i].x, "%f ", temp.x);
+            fprintf(A[i].y, "%f ", temp.y);
+            fprintf(A[i].z, "%f ", temp.z);
+            temp.id = i;
     }
     getline(fin, line);
 }
@@ -205,9 +215,9 @@ void display(void)
 // Enables depth testing and sets background colors
 void init(void)
 {
-    fin.open(TRJ);
-    box = readContainer(fin);
-    balls = readSpheres(fin);
+    fl = fopen(TRJ, "rb");
+    box = readContainer();
+    balls = readSpheres();
     // Assign space to store coordinates of the sphere
     Point temp;
     temp.id = temp.x = temp.y = temp.z = 0;
@@ -237,7 +247,7 @@ void timer(int v)
     if(steps < TIMESTEPS)
     {
         cout<<"$$: ";
-        extractCurrentCoords(Coords, balls.n, fin);
+        extractCurrentCoords(Coords, balls.n);
         cout<< Coords[0].x  <<"\n";
     }
     steps++;
