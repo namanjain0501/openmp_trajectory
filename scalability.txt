@@ -1,0 +1,23 @@
+Number of Threads : 1
+
+real    422m5.326s
+user    421m37.221s
+sys     0m24.113s
+
+Number of Threads : 2
+
+real    220m37.229s
+user    440m7.102s
+sys     0m34.638s
+
+Number of Threads : 4
+
+real    116m51.342s
+user    465m35.873s
+sys     0m39.867s
+
+Number of Threads : 8
+
+real    65m22.681s
+user    521m16.468s
+sys     0m30.761s
