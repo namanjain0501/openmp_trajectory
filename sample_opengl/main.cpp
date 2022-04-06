@@ -240,9 +240,7 @@ void timer(int v)
     // At every instant of time extract coordinates
     if(steps < TIMESTEPS)
     {
-        cout<<"$$: ";
         extractCurrentCoords(Coords, balls.n);
-        cout<< Coords[0].x  <<"\n";
     }
     steps++;
 }
@@ -267,10 +265,10 @@ void reshape(GLint w, GLint h)
     glLoadIdentity();
     //perspectiveGL(60, 1, -500,0.1); // For 3D visibility
     // 2D Testing
-    glOrtho(0, w, 0, h, 0, -1000);
+    glOrtho(0, w, 0, h, 0, -2000);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslatef(w/2-2*box.width, h/2-2*box.height, -500+2*box.depth);
+    glTranslatef(w/2-2*box.width, h/2-2*box.height, -1000+2*box.depth);
     glScalef(4.0, 4.0, 4.0);
 }
 
@@ -300,8 +298,6 @@ void drawCube(Container box)
     vector<tuple<float, float, float> > vertices;
 
     vertices.assign(8, make_tuple(0,0,0));
-
-    cout<<box.width<<":"<<box.height<<":"<<box.depth<<"\n";
 
     vertices= {
         make_tuple(box.width, 0, 0),
@@ -339,8 +335,6 @@ void drawSpheres(void)
 {
     // draw n number of spheres at coordinates specified in the array
     int i, n;
-
-    cout<<balls.radius<<":"<<balls.n<<"\n";
     n = balls.n;
     for(i=0; i<n; i++)
     {

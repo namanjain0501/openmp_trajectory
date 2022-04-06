@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1649266935 source:c:\users\gasad\desktop\vahini\sample_opengl\main.cpp
+1649268017 source:c:\users\gasad\desktop\vahini\sample_opengl\main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<fstream>
