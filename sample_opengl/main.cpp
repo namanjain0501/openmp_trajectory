@@ -76,6 +76,7 @@ int main(int argc, char** argv)
     init();
 
     glutMainLoop();
+    fin.close();
     return 0;
 }
 
@@ -169,16 +170,17 @@ void display(void)
 
     extractCurrentCoords(Coords, balls.n, fin);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT  );
-    glPushMatrix();
+    //glPushMatrix();
     glLoadIdentity();
+    //glTranslatef(-10, -10, 0);
 
     drawCube(box);
 
     cout<<"#:"<<Coords[0].x<<"\n";
 
-    drawSpheres();
+    //drawSpheres();
 
-    glPopMatrix();
+    //glPopMatrix();
     glutSwapBuffers();
 }
 
@@ -186,12 +188,6 @@ void display(void)
 void init(void)
 {
 
-    // Set the current clear color to sky blue and the current drawing color to
-    // white.
-    glClearColor(0.1, 0.39, 0.88, 1.0);
-    glColor3f(1.0, 1.0, 1.0);
-
-    glEnable(GL_DEPTH_TEST);
     fin.open(TRJ);
     box = readContainer(fin);
     balls = readSpheres(fin);
@@ -200,6 +196,20 @@ void init(void)
     temp.id = temp.x = temp.y = temp.z = 0;
     Coords.assign(balls.n, temp) ;
     steps = 0;
+    // Set the current clear color to sky blue and the current drawing color to
+    // white.
+    glClearColor(0.1, 0.39, 0.88, 1.0);
+    glClearDepth(box.depth);
+    glColor3f(1.0, 1.0, 1.0);
+
+   glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
+   glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
+   glShadeModel(GL_SMOOTH);   // Enable smooth shading
+   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
+
+
+    //glEnable(GL_DEPTH_TEST);
+
 }
 
 // For animation
@@ -238,7 +248,7 @@ void reshape(GLint w, GLint h)
     glViewport(0, 0, w, h); // set the viewing area
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    perspectiveGL(45,GLfloat(w)/GLfloat(h) , -500,0);
+    perspectiveGL(60,GLfloat(w)/GLfloat(h) , -500,500);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
@@ -249,7 +259,7 @@ void drawCube(Container box)
     glBegin(GL_LINES);
 
     glColor3f(1, 0, 0);
-    glLineWidth(3);
+    glLineWidth(1);
 
 
     // Front face
@@ -266,7 +276,7 @@ void drawCube(Container box)
     glVertex3f(0, 0, box.depth);
 
     // Back face
-    glVertex3f(0, 0, 0);
+    /*glVertex3f(0, 0, 0);
     glVertex3f(box.width, 0, 0);
 
     glVertex3f(box.width, 0, 0);
@@ -328,7 +338,7 @@ void drawCube(Container box)
     glVertex3f(0, 0, box.depth);
 
     glVertex3f(0, 0, box.depth);
-    glVertex3f(box.width, 0, box.depth);
+    glVertex3f(box.width, 0, box.depth);*/
 
     glEnd();
 }
@@ -344,12 +354,11 @@ void drawSpheres(void)
     n = balls.n;
     for(i=0; i<n; i++)
     {
-        glPushMatrix();
+        //glPushMatrix();
         glColor3f(1.0,1.0,0.0);
         glTranslatef( Coords[i].x, Coords[i].y, Coords[i].z );
         glutSolidSphere(balls.radius, 30, 30 );
-        glPopMatrix();
+        //glPopMatrix();
     }
-
 
 }
