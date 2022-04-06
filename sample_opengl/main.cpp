@@ -22,13 +22,13 @@
 using namespace std;
 
 #define TRJ "output.bin"
-#define TIMESTEPS 100
+#define TIMESTEPS 90
 #define DELTA 0.01
 
 //Input and output functions
 typedef struct  {
     int id;
-    float x, y, z;
+    double x, y, z;
 } Point;
 
 typedef struct{
@@ -66,7 +66,7 @@ void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFa
 int main(int argc, char** argv)
 {
     // initialize and create a window
-    /*glutInit(&argc, argv);
+    glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(1024, 1024);
     glutCreateWindow("HP3 OpenMP TermProject");
@@ -78,10 +78,12 @@ int main(int argc, char** argv)
     init();
 
     glutMainLoop();
-    fin.close();*/
+    fclose(f1);
 
-    f1 = fopen(TRJ, "rb");
+    /*f1 = fopen(TRJ, "rb");
 
+    box = readContainer();
+    balls = readSpheres();
     // Assign space to store coordinates of the sphere
     Point temp;
     temp.id = temp.x = temp.y = temp.z = 0;
@@ -94,7 +96,7 @@ int main(int argc, char** argv)
     printArray(Coords, 10);
 
     extractCurrentCoords(Coords, balls.n);
-    printArray(Coords, 10);
+    printArray(Coords, 10);*/
 
     return 0;
 }
@@ -122,8 +124,8 @@ Container readContainer(){
         count ++;
     }*/
     box.depth = 400;
-    box.width  =100;
-    box.height = 200;
+    box.width  =200;
+    box.height = 100;
 
     return box;
 }
@@ -221,7 +223,7 @@ void init(void)
     //glClearDepth(box.depth);  // Leave for now
     glColor3f(1.0, 1.0, 1.0); // default color for primitives
 
-     glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
+   glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
    glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
    glShadeModel(GL_SMOOTH);   // Enable smooth shading
    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
@@ -323,9 +325,9 @@ void drawCube(Container box)
     for(i=0; i<12; i++)
     {
         j = edges[i].first;
-        glVertex3f(get<0>(vertices[j]),get<1>(vertices[j]),get<2>(vertices[j])) ;
+        glVertex3d(get<0>(vertices[j]),get<1>(vertices[j]),get<2>(vertices[j])) ;
         j = edges[i].second;
-        glVertex3f(get<0>(vertices[j]),get<1>(vertices[j]),get<2>(vertices[j])) ;
+        glVertex3d(get<0>(vertices[j]),get<1>(vertices[j]),get<2>(vertices[j])) ;
     }
 
     glEnd();
@@ -343,7 +345,7 @@ void drawSpheres(void)
     {
         glPushMatrix();
         glColor3f(1.0,1.0,0.0);
-        glTranslatef(Coords[i].x, Coords[i].y, Coords[i].z );
+        glTranslated(Coords[i].x, Coords[i].y, Coords[i].z );
         glutSolidSphere(balls.radius, 30, 30 );
         glPopMatrix();
     }
