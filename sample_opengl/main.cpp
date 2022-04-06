@@ -6,6 +6,8 @@
 #include<iostream>
 #include<stdbool.h>
 #include<cmath>
+#include<utility>
+#include<tuple>
 
 // OpenGL graphics libraries.
 #ifdef __APPLE_CC__
@@ -20,7 +22,8 @@
 using namespace std;
 
 #define TRJ "Trajectory.txt"
-#define TIMESTEPS 1
+#define TIMESTEPS 9
+#define DELTA 0.01
 
 //Input and output functions
 typedef struct  {
@@ -65,18 +68,35 @@ int main(int argc, char** argv)
     // initialize and create a window
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-    glutInitWindowPosition(100, 100);
     glutInitWindowSize(1024, 1024);
     glutCreateWindow("HP3 OpenMP TermProject");
 
     glutDisplayFunc(display);
-    //glutTimerFunc(0, timer, 0);
+    glutTimerFunc(0, timer, 0);
     glutReshapeFunc(reshape);
 
     init();
 
     glutMainLoop();
     fin.close();
+
+    /*fin.open(TRJ);
+    box = readContainer(fin);
+    balls = readSpheres(fin);
+    // Assign space to store coordinates of the sphere
+    Point temp;
+    temp.id = temp.x = temp.y = temp.z = 0;
+    Coords.assign(balls.n, temp) ;
+
+    extractCurrentCoords(Coords, balls.n, fin);
+    printArray(Coords, 10);
+
+    extractCurrentCoords(Coords, balls.n, fin);
+    printArray(Coords, 10);
+
+    extractCurrentCoords(Coords, balls.n, fin);
+    printArray(Coords, 10);*/
+
     return 0;
 }
 
@@ -147,7 +167,7 @@ void extractCurrentCoords(vector<Point> &A, int n, ifstream &fin) {
     string line;
     int i;
     Point temp;
-    getline(fin, line);
+    //getline(fin, line);
     for(i=0; i<n; i++) {
        fin>>temp.x>>temp.y>>temp.z;
        temp.id = i;
@@ -167,27 +187,24 @@ void printArray(vector<Point> &A, int n) {
 // Contains the content that need to be drawn on the frame
 void display(void)
 {
-
-    extractCurrentCoords(Coords, balls.n, fin);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT  );
-    //glPushMatrix();
-    glLoadIdentity();
-    //glTranslatef(-10, -10, 0);
+    glColor3f(0.2, 0.5, 0.4);
+
+    glPushMatrix();
 
     drawCube(box);
+    glPopMatrix();
 
-    cout<<"#:"<<Coords[0].x<<"\n";
+    drawSpheres();
 
-    //drawSpheres();
-
-    //glPopMatrix();
+    glPopMatrix();
     glutSwapBuffers();
+    glFlush();
 }
 
 // Enables depth testing and sets background colors
 void init(void)
 {
-
     fin.open(TRJ);
     box = readContainer(fin);
     balls = readSpheres(fin);
@@ -195,29 +212,26 @@ void init(void)
     Point temp;
     temp.id = temp.x = temp.y = temp.z = 0;
     Coords.assign(balls.n, temp) ;
-    steps = 0;
-    // Set the current clear color to sky blue and the current drawing color to
-    // white.
-    glClearColor(0.1, 0.39, 0.88, 1.0);
-    glClearDepth(box.depth);
-    glColor3f(1.0, 1.0, 1.0);
 
-   glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
+    steps = 0;
+    // Set the current clear color to sky blue and the current drawing color to white.
+    //glClearColor(0.1, 0.39, 0.88, 1.0); // background color
+    glClearColor(0,0,0,1);
+    //glClearDepth(box.depth);  // Leave for now
+    glColor3f(1.0, 1.0, 1.0); // default color for primitives
+
+     glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
    glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
    glShadeModel(GL_SMOOTH);   // Enable smooth shading
    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
-
-
-    //glEnable(GL_DEPTH_TEST);
 
 }
 
 // For animation
 void timer(int v)
 {
-
-    // ? Change the frame persecond
-    glutTimerFunc(1000/60, timer, v);
+    // Redraw the screen after every DELTA TIME (CONVERTED TO MILLI SECONDS)
+    glutTimerFunc(1000*DELTA, timer, v);
     glutPostRedisplay();
     // At every instant of time extract coordinates
     if(steps < TIMESTEPS)
@@ -227,7 +241,6 @@ void timer(int v)
         cout<< Coords[0].x  <<"\n";
     }
     steps++;
-
 }
 
 void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar )
@@ -248,97 +261,71 @@ void reshape(GLint w, GLint h)
     glViewport(0, 0, w, h); // set the viewing area
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    perspectiveGL(60,GLfloat(w)/GLfloat(h) , -500,500);
+    //perspectiveGL(60, 1, -500,0.1); // For 3D visibility
+    // 2D Testing
+    glOrtho(0, w, 0, h, 0, -1000);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    glTranslatef(w/2-2*box.width, h/2-2*box.height, 2*box.depth);
+    glScalef(4.0, 4.0, 4.0);
 }
 
 void drawCube(Container box)
 {
     // This cube should have depth effect. Draw Lines
+    vector<pair<int, int> > edges;
+
+    edges.assign(12, make_pair(0,0));
+
+    edges = {
+        make_pair(0,1),
+        make_pair(0,3),
+        make_pair(2,3),
+        make_pair(2,1),
+
+        make_pair(0,4),
+        make_pair(2,7),
+        make_pair(6,3),
+        make_pair(6,4),
+        make_pair(6,7),
+        make_pair(5,1),
+        make_pair(5,4),
+        make_pair(5,7)
+    };
+
+    vector<tuple<float, float, float> > vertices;
+
+    vertices.assign(8, make_tuple(0,0,0));
+
+    cout<<box.width<<":"<<box.height<<":"<<box.depth<<"\n";
+
+    vertices= {
+        make_tuple(box.width, 0, 0),
+        make_tuple(box.width, box.height, 0),
+        make_tuple(0, box.height, 0),
+        make_tuple(0,0, 0),
+        make_tuple(box.width, 0, box.depth),
+        make_tuple(box.width, box.height, box.depth),
+        make_tuple(0,0, box.depth),
+        make_tuple(0, box.height, box.depth),
+    };
+
+    int i, j;
+
+   // glMatrixMode(GL_MODELVIEW);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  // this tells it to only render lines
+
     glBegin(GL_LINES);
 
     glColor3f(1, 0, 0);
-    glLineWidth(1);
-
-
-    // Front face
-    glVertex3f(0, 0, box.depth);
-    glVertex3f(box.width, 0, box.depth);
-
-    glVertex3f(box.width, 0, box.depth);
-    glVertex3f(box.width, box.height, box.depth);
-
-    glVertex3f(box.width, box.height, box.depth);
-    glVertex3f(0, box.height, box.depth);
-
-    glVertex3f(0, box.height, box.depth);
-    glVertex3f(0, 0, box.depth);
-
-    // Back face
-    /*glVertex3f(0, 0, 0);
-    glVertex3f(box.width, 0, 0);
-
-    glVertex3f(box.width, 0, 0);
-    glVertex3f(box.width, box.height, 0);
-
-    glVertex3f(box.width, box.height, 0);
-    glVertex3f(0, box.height, 0);
-
-    glVertex3f(0, box.height, 0);
-    glVertex3f(0, 0, 0);
-
-    // Left face
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, box.depth);
-
-    glVertex3f(0, 0, box.depth);
-    glVertex3f(0, box.height, box.depth);
-
-    glVertex3f(0, box.height, box.depth);
-    glVertex3f(0, box.height, 0);
-
-    glVertex3f(0, box.height, 0);
-    glVertex3f(0, 0, 0);
-
-    // Right face
-    glVertex3f(box.width, 0, 0);
-    glVertex3f(box.width, 0, box.depth);
-
-    glVertex3f(box.width, 0, box.depth);
-    glVertex3f(box.width, box.height, box.depth);
-
-    glVertex3f(box.width, box.height, box.depth);
-    glVertex3f(box.width, box.height, 0);
-
-    glVertex3f(box.width, box.height, 0);
-    glVertex3f(box.width, 0, 0);
-
-    // Top face
-    glVertex3f(box.width, box.height, box.depth);
-    glVertex3f(box.width, box.height, 0);
-
-    glVertex3f(box.width, box.height, 0);
-    glVertex3f(0, box.height, 0);
-
-    glVertex3f(0, box.height, 0);
-    glVertex3f(0, box.height, box.depth);
-
-    glVertex3f(0, box.height, box.depth);
-    glVertex3f(box.width, box.height, box.depth);
-
-    // Bottom face
-    glVertex3f(box.width, 0, box.depth);
-    glVertex3f(box.width, 0, 0);
-
-    glVertex3f(box.width, 0, 0);
-    glVertex3f(0, 0, 0);
-
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, box.depth);
-
-    glVertex3f(0, 0, box.depth);
-    glVertex3f(box.width, 0, box.depth);*/
+    glLineWidth(2);
+    for(i=0; i<12; i++)
+    {
+        j = edges[i].first;
+        glVertex3f(get<0>(vertices[j]),get<1>(vertices[j]),get<2>(vertices[j])) ;
+        j = edges[i].second;
+        glVertex3f(get<0>(vertices[j]),get<1>(vertices[j]),get<2>(vertices[j])) ;
+    }
 
     glEnd();
 }
@@ -349,16 +336,15 @@ void drawSpheres(void)
     // draw n number of spheres at coordinates specified in the array
     int i, n;
 
-
     cout<<balls.radius<<":"<<balls.n<<"\n";
     n = balls.n;
     for(i=0; i<n; i++)
     {
-        //glPushMatrix();
+        glPushMatrix();
         glColor3f(1.0,1.0,0.0);
-        glTranslatef( Coords[i].x, Coords[i].y, Coords[i].z );
+        glTranslatef(Coords[i].x, Coords[i].y, Coords[i].z );
         glutSolidSphere(balls.radius, 30, 30 );
-        //glPopMatrix();
+        glPopMatrix();
     }
 
 }
