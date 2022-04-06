@@ -22,7 +22,7 @@
 using namespace std;
 
 #define TRJ "output.bin"
-#define TIMESTEPS 90
+#define TIMESTEPS 50
 #define DELTA 0.01
 
 //Input and output functions
