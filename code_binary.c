@@ -43,8 +43,8 @@ bool collide_wall(double box_dimension, double ball_position) {
 }
 
 void parse_coords( Position * pos , FILE * fp) {
-    fscanf(fp,"%lf",&(pos->y)); 
-    fscanf(fp,"%lf",&(pos->x));
+    fscanf(fp,"%lf",&(pos->x)); 
+    fscanf(fp,"%lf",&(pos->y));
     fscanf(fp,"%lf",&(pos->z));
 }
 void printPosition(Position * p , int i , FILE * fo) {
@@ -238,11 +238,11 @@ int main() {
             //collision with wall
             #pragma omp for private(i)
             for(i = 0 ; i < TOTAL_BODIES ; i++ ) {
-                if( collide_wall(L,pos[i].x)) {
+                if( collide_wall(W,pos[i].x)) {
                     //printf("collision of %d with wall",i);
                     velocity[i].x=-velocity[i].x;
                 }   
-                if( collide_wall(W,pos[i].y)) {
+                if( collide_wall(L,pos[i].y)) {
                     //printf("collision of %d with wall",i);
                     velocity[i].y=-velocity[i].y;
                 }
@@ -272,7 +272,6 @@ int main() {
                         fwrite(&pos[i].y, sizeof(double), 1, fo);
                         fwrite(&pos[i].z, sizeof(double), 1, fo);
                     }
-                    fwrite("\n", sizeof(char), 1, fo);
                 }
             }
         }
