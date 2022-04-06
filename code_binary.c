@@ -13,7 +13,7 @@
 #define M  1.0 
 #define R  0.5 
 #define TIME_STEP  0.01 
-#define TOTAL_STEPS 500
+#define TOTAL_STEPS 80000
 // FINALLY TO BE CHANGED TO 720000
 
 #define THREADS 8
@@ -98,9 +98,14 @@ int normalize(Position * p) {
     }
 }
 
+
+// NOT USED 
 double velAfterCollision(double v1 , double v2 , int m ) {
+    if(abs(v1 > v2)) return v1 ;
     // EQUATION : 
-    // (pow(v1,2) + m * pow(v2,2 ))/2.0  = pow(x,2)/2 + (0.5/m) * (pow(x,2) - 2*(v1 + m*v2)*x + pow((v1 + m*v2),2))
+    // v1 + m*v2 = X + m*V2 
+    // 
+    // (pow(v1,2) + m * pow(v2,2 ))  = pow(x,2) + (1/m) * (pow(x,2) - 2*(v1 + m*v2)*x + pow((v1 + m*v2),2))
     double a = 1 + (1.0 / (double) m );  
     double b = -2*((v1 + m*v2) / (double) m) ; 
     double c =  pow((v1 + m*v2),2) * (1.0/(double)m) - pow(v1,2) - (m * pow(v2,2)); 
@@ -108,7 +113,11 @@ double velAfterCollision(double v1 , double v2 , int m ) {
     double root2 = (-b - sqrt(b*b-4.*a*c) ) / (2.*a);
     // printf("a = %lf b = %lf c = %lf \n" , a ,b, c ) ; 
     // printf("v1 = %lf v2 = %lf m = %lf Final V1 = %lf FINAL V2 = %lf\n" , v1, v2 , (double)m , root1 , root2 ) ; 
-    if(root1 - v1 > 1e-6) {
+    if(b*b-(4.0*a*c) < 0 ) {
+        printf("D < 0 \n") ; 
+        
+    }
+    if(abs(root1 - v1) > 1e-6) {
         // printf("Collision happening taken root1\n") ;
         return root1 ; 
        
@@ -120,6 +129,15 @@ double velAfterCollision(double v1 , double v2 , int m ) {
     }
     return root1 ; 
     // return (root1 > 0) ? root1 : ((root2 > 0) ? (root2 : -1)) ; 
+}
+double dot(Velocity * v , Position * p) {
+    return v->x*p->x + v->y*p->y + v->z * p->z  ; 
+}
+void change(Velocity * v , double dotV1 , double dotV2 , Position * p) {
+    v->x = v->x - dotV1*p->x + dotV2*p->x ; 
+    v->y = v->y - dotV1*p->y + dotV2*p->y ; 
+    v->z = v->z - dotV1*p->z + dotV2*p->z ; 
+    return ; 
 }
 void collision(Position * p , Position * all_pos  , Velocity * nv ,Velocity * all_velo , int size)  {
     int * collide = (int *)malloc(1 * sizeof(int)); 
@@ -133,39 +151,16 @@ void collision(Position * p , Position * all_pos  , Velocity * nv ,Velocity * al
         }
     }
     if(count > 0 ) {
-        Position mean ; 
-        mean.x = mean.y = mean.z = 0 ; 
-        Velocity mean_velocity ; 
-        mean_velocity.x =  mean_velocity.y =  mean_velocity.z =  0 ; 
         for(int i = 0 ; i < count ; i++ ) {
-            mean.x+=all_pos[collide[i]].x ; 
-            mean.y+=all_pos[collide[i]].y ;
-            mean.z+=all_pos[collide[i]].z ;
+            Position collision_vector ; 
+            collision_vector.x = (all_pos[collide[i]].x - p->x) ; 
+            collision_vector.y = (all_pos[collide[i]].y - p->y) ; 
+            collision_vector.z = (all_pos[collide[i]].z - p->z) ;
+            normalize(&collision_vector) ; 
+            double dotV1 = dot(nv, &collision_vector) ; 
+            double dotV2 = dot(&all_velo[collide[i]], &collision_vector) ; 
+            change(nv , dotV1 , dotV2 , &collision_vector) ; 
         }
-        mean.x /= (double)count ; 
-        mean.y /= (double)count ; 
-        mean.z /= (double)count ; 
-
-        Position collision_vector ; 
-        collision_vector.x = (mean.x - p->x) ; 
-        collision_vector.y = (mean.y - p->y) ; 
-        collision_vector.z = (mean.z - p->z) ;
-        normalize(&collision_vector) ; 
-       
-        Velocity new_velocity ; 
-        new_velocity.x = new_velocity.y = new_velocity.z = 0 ; 
-        for(int i = 0 ; i < count ; i++ ) {
-            new_velocity.x += all_velo[collide[i]].x ; 
-            new_velocity.y += all_velo[collide[i]].y ; 
-            new_velocity.z += all_velo[collide[i]].z ; 
-        } 
-        new_velocity.x/=(double)count ; 
-        new_velocity.y/=(double)count ; 
-        new_velocity.z/=(double)count ; 
-        
-        nv->x =  velAfterCollision(collision_vector.x * nv->x , collision_vector.x*new_velocity.x , count) ;  
-        nv->y =  velAfterCollision(collision_vector.y * nv->y , collision_vector.y*new_velocity.y , count) ;  
-        nv->z =  velAfterCollision(collision_vector.z * nv->z , collision_vector.z*new_velocity.z , count) ;  
     }
 } 
 int main() {

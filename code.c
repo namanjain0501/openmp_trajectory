@@ -134,9 +134,9 @@ double dot(Velocity * v , Position * p) {
     return v->x*p->x + v->y*p->y + v->z * p->z  ; 
 }
 void change(Velocity * v , double dotV1 , double dotV2 , Position * p) {
-    v->x -= dotV1*p->x + dotV2*p->x ; 
-    v->y -= dotV1*p->y + dotV2*p->y ; 
-    v->z -= dotV1*p->z + dotV2*p->z ; 
+    v->x = v->x - dotV1*p->x + dotV2*p->x ; 
+    v->y = v->y - dotV1*p->y + dotV2*p->y ; 
+    v->z = v->z - dotV1*p->z + dotV2*p->z ; 
     return ; 
 }
 void collision(Position * p , Position * all_pos  , Velocity * nv ,Velocity * all_velo , int size)  {
