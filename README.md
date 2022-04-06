@@ -11,9 +11,5 @@ Resources:
 Tutorial: https://www.youtube.com/watch?v=3aJ8OR1C6pk
 Codes : https://cs.lmu.edu/~ray/notes/openglexamples/
 
-Errors
-Spheres not displayed
-Need to draw Cubes
-
 
 <!---->
