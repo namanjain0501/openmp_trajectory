@@ -22,7 +22,7 @@
 using namespace std;
 
 #define TRJ "output.bin"
-#define TIMESTEPS 7200
+#define TIMESTEPS 100
 #define DELTA 0.01
 
 //Input and output functions
@@ -80,29 +80,26 @@ int main(int argc, char** argv)
     glutMainLoop();
     fin.close();*/
 
-    fl = fopen(TRJ, "rb");
+    f1 = fopen(TRJ, "rb");
 
     // Assign space to store coordinates of the sphere
     Point temp;
     temp.id = temp.x = temp.y = temp.z = 0;
     Coords.assign(balls.n, temp) ;
 
-    extractCurrentCoords(Coords, balls.n, fin);
+    extractCurrentCoords(Coords, balls.n);
     printArray(Coords, 10);
 
-    extractCurrentCoords(Coords, balls.n, fin);
+    extractCurrentCoords(Coords, balls.n);
     printArray(Coords, 10);
 
-    extractCurrentCoords(Coords, balls.n, fin);
+    extractCurrentCoords(Coords, balls.n);
     printArray(Coords, 10);
 
     return 0;
 }
 
 Container readContainer(){
-    string line, text;
-    int count, size;
-    count = 0;
     Container box;
     /*while(getline(fin, line)) {
         if (line.find("Container length (in m) = ") != string::npos) {
@@ -132,9 +129,6 @@ Container readContainer(){
 }
 
 Spheres readSpheres() {
-    string line, text;
-    int count, size;
-    count = 0;
     Spheres ball;
     /*while(getline(fin, line)) {
         if (line.find("Total number of bodies = ") != string::npos) {
@@ -175,15 +169,12 @@ void extractCurrentCoords(vector<Point> &A, int n) {
     Point temp;
     //getline(fin, line);
     for(i=0; i<n; i++) {
-            fread(&temp.x, sizeof(double), 1, fl);
-            fread(&temp.y, sizeof(double), 1, fl);
-            fread(&temp.z, sizeof(double), 1, fl);
-            fprintf(A[i].x, "%f ", temp.x);
-            fprintf(A[i].y, "%f ", temp.y);
-            fprintf(A[i].z, "%f ", temp.z);
+            fread(&temp.x, sizeof(double), 1, f1);
+            fread(&temp.y, sizeof(double), 1, f1);
+            fread(&temp.z, sizeof(double), 1, f1);
             temp.id = i;
+            A[i] = temp;
     }
-    getline(fin, line);
 }
 
 void printArray(vector<Point> &A, int n) {
@@ -215,7 +206,7 @@ void display(void)
 // Enables depth testing and sets background colors
 void init(void)
 {
-    fl = fopen(TRJ, "rb");
+    f1 = fopen(TRJ, "rb");
     box = readContainer();
     balls = readSpheres();
     // Assign space to store coordinates of the sphere
