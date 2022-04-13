@@ -1,0 +1,56 @@
+## System Configuration
+
+OS: Ubuntu 18.04.6 LTS
+core: 4
+threads per core: 2
+number of processors: 8
+
+Architecture:        x86_64
+CPU op-mode(s):      32-bit, 64-bit
+Byte Order:          Little Endian
+CPU(s):              8
+On-line CPU(s) list: 0-7
+Thread(s) per core:  2
+Core(s) per socket:  4
+Socket(s):           1
+NUMA node(s):        1
+Vendor ID:           GenuineIntel
+CPU family:          6
+Model:               142
+Model name:          Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz
+Stepping:            10
+CPU MHz:             677.662
+CPU max MHz:         3400.0000
+CPU min MHz:         400.0000
+BogoMIPS:            3600.00
+Virtualization:      VT-x
+L1d cache:           32K
+L1i cache:           32K
+L2 cache:            256K
+L3 cache:            6144K
+NUMA node0 CPU(s):   0-7
+
+
+NUMBER OF STEPS = 720000
+
+Number of Threads : 1
+
+    total time : 422m5.326s
+    time per step : 35.17ms
+
+Number of Threads : 2
+
+    total time : 220m37.229s
+    time per step : 18.34ms
+
+Number of Threads : 4
+
+    total time : 116m51.342s
+    time per step : 9.737ms
+
+Number of Threads : 8
+
+    total time : 65m22.681s
+    time per step : 5.448ms
+
+# time per step = total_time/num_of_steps
